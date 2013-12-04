@@ -35,7 +35,7 @@ object Hello extends App {
 
   // Create a connection (called a "session") to an in-memory H2 database
   Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver") withSession { implicit session =>
-    // Create the schema by combining the DDLs for the Suppliers and Coffees tables using the query interface from the companion objects
+    // Create the schema by combining the DDLs for the Suppliers and Coffees tables using the query interfaces
     (suppliers.ddl ++ coffees.ddl).create
 
     // Insert some suppliers
