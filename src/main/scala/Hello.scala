@@ -12,11 +12,6 @@ class Suppliers(tag: Tag) extends Table[(Int, String, String, String, String, St
   def * = (id, name, street, city, state, zip)
 }
 
-// Companion object that provides the query interface for the Suppliers table
-object Suppliers {
-  def apply() = TableQuery[Suppliers]
-}
-
 // A Coffees table with 5 columns: name, supplier id, price, sales, total
 class Coffees(tag: Tag) extends Table[(String, Int, Double, Int, Int)](tag, "COFFEES") {
   def name = column[String]("COF_NAME", O.PrimaryKey)
@@ -26,29 +21,30 @@ class Coffees(tag: Tag) extends Table[(String, Int, Double, Int, Int)](tag, "COF
   def total = column[Int]("TOTAL")
   def * = (name, supID, price, sales, total)
   // A reified foreign key relation that can be navigated to create a join
-  def supplier = foreignKey("SUP_FK", supID, Suppliers())(_.id)
-}
-
-// Companion object that provides the query interface for the Coffees table
-object Coffees {
-  def apply() = TableQuery[Coffees]
+  def supplier = foreignKey("SUP_FK", supID, TableQuery[Suppliers])(_.id)
 }
 
 // The main application
 object Hello extends App {
+  
+  // The query interface for the Suppliers table
+  val suppliers = TableQuery[Suppliers]
+  
+  // the query interface for the Coffees table
+  val coffees = TableQuery[Coffees]
 
   // Create a connection (called a "session") to an in-memory H2 database
   Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver") withSession { implicit session =>
     // Create the schema by combining the DDLs for the Suppliers and Coffees tables using the query interface from the companion objects
-    (Suppliers().ddl ++ Coffees().ddl).create
+    (suppliers.ddl ++ coffees.ddl).create
 
     // Insert some suppliers
-    Suppliers() += (101, "Acme, Inc.", "99 Market Street", "Groundsville", "CA", "95199")
-    Suppliers() += (49, "Superior Coffee", "1 Party Place", "Mendocino", "CA", "95460")
-    Suppliers() += (150, "The High Ground", "100 Coffee Lane", "Meadows", "CA", "93966")
+    suppliers += (101, "Acme, Inc.", "99 Market Street", "Groundsville", "CA", "95199")
+    suppliers += (49, "Superior Coffee", "1 Party Place", "Mendocino", "CA", "95460")
+    suppliers += (150, "The High Ground", "100 Coffee Lane", "Meadows", "CA", "93966")
 
     // Insert some coffees (using JDBC's batch insert feature)
-    val coffeesInsertResult: Option[Int] = Coffees() ++= Seq (
+    val coffeesInsertResult: Option[Int] = coffees ++= Seq (
       ("Colombian",         101, 7.99, 0, 0),
       ("French_Roast",       49, 8.99, 0, 0),
       ("Espresso",          150, 9.99, 0, 0),
@@ -60,16 +56,16 @@ object Hello extends App {
     coffeesInsertResult foreach (numRows => println(s"Inserted $numRows rows into the Coffees table"))
 
     // Print the SQL for the Coffees query
-    println("Generated SQL for base Coffees query:\n" + Coffees().selectStatement)
+    println("Generated SQL for base Coffees query:\n" + coffees.selectStatement)
 
     // Query the Coffees table using a foreach and print each row
-    Coffees() foreach { case (name, supID, price, sales, total) =>
+    coffees foreach { case (name, supID, price, sales, total) =>
       println("  " + name + "\t" + supID + "\t" + price + "\t" + sales + "\t" + total)
     }
   
   
     // Why not let the database do the string conversion and concatenation?
-    val q1: Query[Column[String], String] = for(c <- Coffees())
+    val q1: Query[Column[String], String] = for(c <- coffees)
       yield LiteralColumn("  ") ++ c.name ++ "\t" ++ c.supID.asColumnOf[String] ++
         "\t" ++ c.price.asColumnOf[String] ++ "\t" ++ c.sales.asColumnOf[String] ++
         "\t" ++ c.total.asColumnOf[String]
@@ -85,8 +81,8 @@ object Hello extends App {
     // Perform a join to retrieve coffee names and supplier names for
     // all coffees costing less than $9.00
     val q2: Query[(Column[String], Column[String]), (String, String)] = for {
-      c <- Coffees() if c.price < 9.0
-      s <- Suppliers() if s.id === c.supID
+      c <- coffees if c.price < 9.0
+      s <- suppliers if s.id === c.supID
     } yield (c.name, s.name)
 
     println("Generated SQL for the q2 query:\n" + q2.selectStatement)
@@ -99,7 +95,7 @@ object Hello extends App {
   
     // Join the tables using the relationship defined in the Coffees table
     val q3: Query[(Column[String], Column[String]), (String, String)] = for {
-      c <- Coffees() if c.price > 9.0
+      c <- coffees if c.price > 9.0
       s <- c.supplier
     } yield (c.name, s.name)
 
