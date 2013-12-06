@@ -11,7 +11,7 @@ class Suppliers(tag: Tag) extends Table[(Int, String, String, String, String, St
   def zip: Column[String] = column[String]("ZIP")
   
   // Every table needs a * projection with the same type as the table's type parameter
-  def `*`: ProvenShape[(Int, String, String, String, String, String)] = (id, name, street, city, state, zip)
+  def * : ProvenShape[(Int, String, String, String, String, String)] = (id, name, street, city, state, zip)
 }
 
 // A Coffees table with 5 columns: name, supplier id, price, sales, total
@@ -22,7 +22,7 @@ class Coffees(tag: Tag) extends Table[(String, Int, Double, Int, Int)](tag, "COF
   def sales: Column[Int] = column[Int]("SALES")
   def total: Column[Int] = column[Int]("TOTAL")
   
-  def `*`: ProvenShape[(String, Int, Double, Int, Int)] = (name, supID, price, sales, total)
+  def * : ProvenShape[(String, Int, Double, Int, Int)] = (name, supID, price, sales, total)
   
   // A reified foreign key relation that can be navigated to create a join
   def supplier: ForeignKeyQuery[Suppliers, (Int, String, String, String, String, String)] = 
