@@ -111,7 +111,7 @@ object HelloSlick extends App {
   
     /* Query Composition */
   
-    val composedQuery: Query[Column[String], String] = coffees.take(3).filter(_.price > 9.0).sortBy(_.name).map(_.name)
+    val composedQuery: Query[Column[String], String] = coffees.sortBy(_.name).take(3).filter(_.price > 9.0).map(_.name)
   
     println("Generated SQL for composed query:\n" + composedQuery.selectStatement)
   

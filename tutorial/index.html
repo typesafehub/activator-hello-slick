@@ -138,8 +138,8 @@
     <h2>Query Composition</h2>
 
     <p>
-        The examples so far have taken a base query and used a function to produce a new, more specific query.  Due to the functional nature of the query API, this can be done repeatedly to produce more specific queries.  For example, to create a query on the <code>Coffees</code> table that takes the first three rows, filters those with a prices greater than 9.0, then sorts them by name, and finally just returns the names, simply do:
-        <pre><code>coffees.take(3).filter(_.price &gt; 9.0).sortBy(_.name).map(_.name)</code></pre>
+        The examples so far have taken a base query and used a function to produce a new, more specific query.  Due to the functional nature of the query API, this can be done repeatedly to produce more specific queries.  For example, to create a query on the <code>Coffees</code> table that sorts them by name, takes the first three rows, filters those with a prices greater than 9.0, and finally just returns the names, simply do:
+        <pre><code>coffees.sortBy(_.name).take(3).filter(_.price &gt; 9.0).map(_.name)</code></pre>
         That results in a new query that has a fairly complex implementation in SQL.
     </p>
 </div>
