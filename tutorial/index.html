@@ -184,15 +184,25 @@ val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[Str
     </p>
 </div>
 
-<!--
+<div>
+    <h2>Case Class Mapping</h2>
+
+    <p>
+        The <a href="#code/src/main/scala/CaseClassMapping.scala" class="shortcut">CaseClassMapping.scala</a> file provides an example which uses a case class instead of tupled values.  Run this example by selecting <code>CaseClassMapping</code> in <a href="#run" class="shortcut">Run</a>.  To use case classes instead of tuples setup a <code>def *</code> projection which transforms the tuple values to and from the case class.  For example:
+        <pre><code>def * = (id.?, name) <> (User.tupled, User.unapply)</code></pre>
+        This uses the <code>User</code>'s <code>tupled</code> function to convert a <code>(Option[Int], String)</code> to a <code>User</code> and the <code>unapply</code> function to do the opposite.  Now all of the queries can work with a <code>User</code> instead of the tuples.
+    </p>
+</div>
+
 <div>
     <h2>Auto-Generated Primary Keys</h2>
 
     <p>
-
+        The <code>Users</code> table mapping in <a href="#code/src/main/scala/CaseClassMapping.scala" class="shortcut">CaseClassMapping.scala</a> defines an id column which uses an auto-incrementing primary key:
+        <pre><code>def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)</code></pre>
+        
     </p>
 </div>
--->
 
 <div>
     <h2>Next Steps</h2>

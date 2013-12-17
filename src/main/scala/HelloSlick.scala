@@ -160,5 +160,9 @@ object HelloSlick extends App {
     // Execute the query
     println(plainQuery.list)
     
+    /* Case Class Mapping */
+    
+    
+    
   }
 }
