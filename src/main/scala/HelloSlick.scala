@@ -4,10 +4,10 @@ import scala.slick.driver.H2Driver.simple._
 object HelloSlick extends App {
 
   // The query interface for the Suppliers table
-  val suppliers: TableQuery[Suppliers, (Int, String, String, String, String, String)] = TableQuery[Suppliers]
+  val suppliers: TableQuery[Suppliers] = TableQuery[Suppliers]
 
   // the query interface for the Coffees table
-  val coffees: TableQuery[Coffees, (String, Int, Double, Int, Int)] = TableQuery[Coffees]
+  val coffees: TableQuery[Coffees] = TableQuery[Coffees]
   
   // Create a connection (called a "session") to an in-memory H2 database
   Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver").withSession { implicit session =>
@@ -138,7 +138,7 @@ object HelloSlick extends App {
     // Create a new computed column that calculates the max price
     val maxPriceColumn: Column[Option[Double]] = coffees.map(_.price).max
     
-    println("Generated SQL for max price column:\n" + maxPriceColumn.shaped.selectStatement)
+    println("Generated SQL for max price column:\n" + maxPriceColumn.selectStatement)
     
     // Execute the computed value query
     println(maxPriceColumn.run)
@@ -159,10 +159,6 @@ object HelloSlick extends App {
     
     // Execute the query
     println(plainQuery.list)
-    
-    /* Case Class Mapping */
-    
-    
     
   }
 }
