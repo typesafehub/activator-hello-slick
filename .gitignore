@@ -6,3 +6,4 @@
 /project/activator-*
 /logs/
 /RUNNING_PID
+*.iml

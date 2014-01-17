@@ -3,233 +3,211 @@
     <title>Hello Slick - Activator Template</title>
 </head>
 <body>
-<div>
-    <h2>Dependencies</h2>
 
-    <p>You've just created a basic Slick application. Let's take a closer look at what's happening in this
-        project. First of all, you need to add Slick and te embedded databases or drivers for external databases
-        to your project. We have already taken care of this for you in the <a href="#code/build.sbt"
-        class="shortcut">build.sbt</a> file.</p>
-    <p>Slick uses <a href="http://www.slf4j.org/">SLF4J</a> for its own debug
-        logging so you also need to add an SLF4J implementation. Here we are using <code>slf4j-nop</code> to disable
-        logging. You have to replace this with a real logging framework like
-        <a href="http://logback.qos.ch/">Logback</a> if you want to see log output.</p>
+<div>
+    <h2>Intro to Slick</h2>
+    
+    <p>
+        Slick is a Functional Relational Mapping (FRM) library for Scala where you work with relational data in a type-safe and functional way.  Here is an example:
+        <pre><code>coffees.filter(_.price &lt; 10.0).map(_.name)</code></pre>
+        This will produce a query equivalent to the following SQL:
+        <pre><code>select COF_NAME from COFFEES where PRICE &lt; 10.0</code></pre>
+        Developers benefit from the type-safety and composability of FRM as well as being able to reuse the typical Scala collection APIs like <code>filter</code>, <code>map</code>, <code>foreach</code>, etc.
+        This template will get you started learning Slick using a working application.  Continue the tutorial to learn about how to run the application, run the tests, and explore the basics of Slick.
+    </p>
 </div>
 
 <div>
-    <h2>Imports</h2>
-    <p>Let's move on to <a href="#code/src/main/scala/Hello.scala" class="shortcut">src/main/scala/Hello.scala</a> which contains the
-        scaffolding for the application. It starts off with some imports:</p>
+    <h2>Run the App and the Tests</h2>
+    
+    <p>
+        This template includes a simple Scala application, <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>, that does basic FRM operations with Slick.  This application automatically runs when Activator is started and then re-runs after every successful compile.  You can see the output in <a href="#run" class="shortcut">Run</a>.  Note: The example code in this app has intentionally verbose type information.  In normal applications type inference is used more extensively but to assist with learning the type information was included.
+    </p>
 
-    <pre><code>// Use H2Driver to connect to an H2 database
-import scala.slick.driver.H2Driver.simple._
-
-// Use the implicit threadLocalSession
-import Database.threadLocalSession</code></pre>
-
-    <p>Since we are using <a href="http://h2database.com/">H2</a> as our database system, we need to import features
-        from Slick's <code>H2Driver</code>. A driver's <code>simple</code> object contains all commonly
-        needed imports from the driver and other parts of Slick such as session handling. The only extra import we use
-        is the <code>threadLocalSession</code>. This simplifies the session handling by attaching a session to the
-        current thread so you do not have to pass it around on your own (or at least assign it to an implicit
-        variable).</p>
+    <p>
+        The <a href="#code/src/test/scala/TablesSuite.scala" class="shortcut">TablesSuite.scala</a> file contains ScalaTest tests which do some basic integration tests.  Check out the test results in <a href="#test" class="shortcut">Test</a>.
+    </p>
 </div>
+
+<div>
+    <h2>Project Setup</h2>
+
+    <p>
+        Slick is a library that is easy to include in any project.  This project uses the sbt build tool so the dependency for Slick is specified in the <a href="#code/build.sbt" class="shortcut">build.sbt</a> file.  To make things simple this project uses the H2 database in-memory.  <a href="http://slick.typesafe.com/doc/2.0.0-M3/connection.html" target="_blank">Learn more about connecting to other databases in the Slick docs</a>.
+    </p>
+</div>
+
+<div>
+    <h2>Schema / Table Mapping</h2>
+
+    <p>
+        The <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> file contains the mappings for a <code>Suppliers</code> and a <code>Coffees</code> table.  These <code>Table</code> create a mapping between a database table and a class.  The table's columns are also mapped to functions.  This mapping is called <a href="http://slick.typesafe.com/doc/2.0.0-M3/lifted-embedding.html" target="_blank">Lifted Embedding</a> since the types of a column mappings are not the actual column value's type, but a wrapper type.  For a column that contains a <code>Double</code> value the type of mapping will be <code>Column[Double]</code>.  This enables type-safe queries to be built around meta-data and then executed against the database.
+
+        Using a table mapping object requires creating a <code>TableQuery</code> instance for the <code>Table</code> classes.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> the <code>suppliers</code> is the <code>TableQuery</code> instance for the <a href="#code/src/main/scala/Tables.scala" class="shortcut">Suppliers</a> class.<br/>
+        
+        <a href="http://slick.typesafe.com/doc/2.0.0-M3/lifted-embedding.html" target="_blank">Learn more about mapping tables and columns in the Slick docs</a>.
+    </p>
+</div>
+
 <div>
     <h2>Database Connection</h2>
-    <p>In the body of the application we create a <code>Database</code> object which specifies
-        how to connect to a database, and then immediately open a session, running all
-        code within the following block inside that session:</p>
 
-    <pre><code>Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver") withSession {
-  // The session is never named explicitly. It is bound to the current
-  // thread as the threadLocalSession that we imported
-}</code></pre>
+    <p>
+        Every query that runs against the database needs a database session to run with.  The <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> file sets up a database connection and gets a session:
+        <pre><code>Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver").withSession { session =&gt;</code></pre>
+        Note: the <code>session</code> can be implicit to avoid specifying it explicitly with every query.<br/>
+        
+        The <code>session</code> can now be used in the scope of the provided function to make queries to the database.  The session is automatically closed after the function completes.
+    
+        It is also possible to create a session and manually close it.  The <a href="#code/src/test/scala/TablesSuite.scala" class="shortcut">TablesSuite.scala</a> tests do this in the <code>before</code> and <code>after</code> functions.
 
-    <p>In a Java SE environment, database sessions are usually created by connecting to a JDBC URL using a JDBC driver
-        class (see the JDBC driver's documentation for the correct URL syntax). If you are only using <em>plain SQL
-        queries</em></a>, nothing more is required, but when Slick is generating SQL code for you (using the
-        <em>direct embedding</em></a> or the <em>lifted embedding</em>), you need to make sure to use a matching Slick
-        driver (in our case the <code>H2Driver</code> import above).</p>
+        <a href="http://slick.typesafe.com/doc/2.0.0-M3/connection.html#session-handling" target="_blank">Learn more about session and connnection handling in the Slick docs</a>.
+    </p>
 </div>
+
 <div>
-    <h2>Schema</h2>
+    <h2>Creating the Schema</h2>
 
-    <p>We are using the lifted embedding in this application, so we have to write <code>Table</code> objects for our
-        database tables. You can define these at the top level of the source file or inside the app or <code>
-        withSession</code> block:</p>
-
-    <pre><code>// Definition of the SUPPLIERS table
-class Suppliers extends Table[(Int, String, String, String, String, String)]("SUPPLIERS") {
-  def id = column[Int]("SUP_ID", O.PrimaryKey) // This is the primary key column
-  def name = column[String]("SUP_NAME")
-  def street = column[String]("STREET")
-  def city = column[String]("CITY")
-  def state = column[String]("STATE")
-  def zip = column[String]("ZIP")
-  // Every table needs a * projection with the same type as the table's type parameter
-  def * = id ~ name ~ street ~ city ~ state ~ zip
-}
-val Suppliers = new Suppliers
-
-// Definition of the COFFEES table
-class Coffees extends Table[(String, Int, Double, Int, Int)]("COFFEES") {
-  def name = column[String]("COF_NAME", O.PrimaryKey)
-  def supID = column[Int]("SUP_ID")
-  def price = column[Double]("PRICE")
-  def sales = column[Int]("SALES")
-  def total = column[Int]("TOTAL")
-  def * = name ~ supID ~ price ~ sales ~ total
-  // A reified foreign key relation that can be navigated to create a join
-  def supplier = foreignKey("SUP_FK", supID, Suppliers)(_.id)
-}
-val Coffees = new Coffees
-</code></pre>
-
-    <p>All columns get a name (usually in camel case for Scala and upper case with
-        underscores for SQL) and a Scala type (from which the SQL type can be derived
-        automatically). Make sure to define them with <code>def</code> and not with <code>val</code>.
-        The table object also needs a Scala name, SQL name and type. The type argument
-        of the table must match the type of the special <code>*</code> projection. In simple
-        cases this is a tuple of all columns but more complex mappings are possible.</p>
-
-    <p>The <code>foreignKey</code> definition in the <code>Coffees</code> table ensures that the
-        <code>supID</code> field can only contain values for which a corresponding <code>id</code>
-        exists in the <code>Suppliers</code> table, thus creating an <em>n to one</em> relationship:
-        A <code>Coffees</code> row points to exactly one <code>Suppliers</code> row but any number
-        of coffees can point to the same supplier. This constraint is enforced at the
-        database level.</p>
+    <p>
+        Once a session is available you can use it to perform operations on the database.  To create corresponding tables from a mapping you can get the DDL via it's <code>TableQuery</code> and then call the <code>create</code> method, like:
+        <pre><code>suppliers.ddl.create</code></pre>
+    
+        Multiple DDLs can also be combined together and created, like in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>:
+        <pre><code>(suppliers.ddl ++ coffees.ddl).create</code></pre>
+    </p>
 </div>
+
 <div>
-    <h2>Populating the Database</h2>
+    <h2>Basic CRUD</h2>
 
-    <p>The connection to the embedded H2 database engine provides us with an empty
-        database. Before we can execute queries, we need to create the database schema
-        (consisting of the <code>Coffees</code> and <code>Suppliers</code> tables) and insert some test
-        data. We can do this with the following code inside the <code>withSession</code> block:</p>
+    <p>
+        Creates / Inserts are as simple as appending the values to a <code>TableQuery</code> instance using either the <code>+=</code> operator for a single row, or <code>++=</code> for multiple rows.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> both of these ways of doing inserts are used.
+    </p>
+    
+    <p>
+        Basic reads / queries can be done through the <code>TableQuery</code> instance using <a href="http://slick.typesafe.com/doc/2.0.0-M3/api/#scala.slick.jdbc.UnitInvoker" target="_blank">Invoker</a> functions.  A simple example of invoking a query is to just call <code>list</code> on the <code>Query</code>, like:
+        <pre><code>suppliers.list</code></pre>
+        That would produce a <code>List[(Int, String, String, String, String, String)]</code> that corresponds to the columns defined in the <code>Table</code> mapping.  Other methods like <code>foreach</code>, <code>first</code>, <code>foldLeft</code> also perform queries.  Filtering, sorting, and joining will be covered in the next few sections of the tutorial.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> you can see how a <code>foreach</code> is used to do a <code>select *</code> query and then print each row.
+    </p>
 
-    <pre><code>// Create the tables, including primary and foreign keys
-(Suppliers.ddl ++ Coffees.ddl).create
+    <p>
+        Filtering / adding <code>where</code> statements to a query is done using functions like <code>filter</code> and <code>take</code> on a <code>TableQuery</code> to construct a new query.  For example, to create a new query on the <code>Coffees</code> table that selects only rows where the price is higher than 9.0, just do:
+        <pre><code>coffees.filter(_.price &gt; 9.0)</code></pre>
+        This produces a SQL statement equivalent to:
+        <pre><code>select * from COFFEES where PRICE &gt; 9.0</code></pre>
+    </p>
+    
+    <p>
+        Updates are done through the <code>TableQuery</code> instance by calling the <code>update</code> function.  To update the <code>sales</code> column on all rows of the <code>Suppliers</code> table, create a new query for just that column:
+        <pre><code>val updateQuery: Query[Column[Int], Int] = coffees.map(_.sales)</code></pre>
+        Then call the <code>update</code> with the new value:
+        <pre><code>updateQuery.update(1)</code></pre>
+    </p>
 
-// Insert some suppliers
-Suppliers.insert(101, "Acme, Inc.",      "99 Market Street", "Groundsville", "CA", "95199")
-Suppliers.insert( 49, "Superior Coffee", "1 Party Place",    "Mendocino",    "CA", "95460")
-Suppliers.insert(150, "The High Ground", "100 Coffee Lane",  "Meadows",      "CA", "93966")
-
-// Insert some coffees (using JDBC's batch insert feature, if supported by the DB)
-Coffees.insertAll(
-  ("Colombian",         101, 7.99, 0, 0),
-  ("French_Roast",       49, 8.99, 0, 0),
-  ("Espresso",          150, 9.99, 0, 0),
-  ("Colombian_Decaf",   101, 8.99, 0, 0),
-  ("French_Roast_Decaf", 49, 9.99, 0, 0)
-)
-</code></pre>
-
-    <p>The tables' <code>ddl</code> methods create <code>DDL</code> (data definition language) objects
-        with the database-specific code for creating and dropping tables and other
-        database entities. Multiple <code>DDL</code> values can be combined with <code>++</code> to
-        allow all entities to be created and dropped in the correct order, even when
-        they have circular dependencies on each other.</p>
-    <p>Inserting the tuples of data is done with the <code>insert</code> and <code>insertAll</code>
-        methods. Note that by default a database <code>Session</code> is in <em>auto-commit</em> mode.
-        Each call to the database like <code>insert</code> or <code>insertAll</code> executes atomically
-        in its own transaction (i.e. it succeeds or fails completely but can never
-        leave the database in an inconsistent state somewhere in between). In this
-        mode we we have to populate the <code>Suppliers</code> table first because the
-        <code>Coffees</code> data can only refer to valid supplier IDs.</p>
-    <p>We could also use an explicit transaction bracket encompassing all these
-        statements. Then the order would not matter because the constraints are only
-        enforced at the end when the transaction is committed.</p>
-
-    <p>Now that we have some code that accesses the database, it is time to
-        <a class="shortcut" href="#run">Run</a> the app for the first time. It should complete
-        without errors but it doesn't produce any output yet.</p>
+    <p>
+        Deletes are done by just running <code>delete</code> on a query.  So to delete coffees with a price less than 8.0, just do:
+        <pre><code>coffees.filter(_.price &lt; 8.0).delete</code></pre>
+        This will produce SQL equivalent to:
+        <pre><code>delete from COFFEES where PRICE &lt; 8.0</code></pre>
+    </p>
 </div>
+
 <div>
-    <h2>Querying</h2>
+    <h2>Selecting Specific Columns</h2>
 
-    <p>The simplest kind of query iterates over all the data in a table. Add the following lines of code
-    at the end (but still inside) of the <code>withSession</code> block:</p>
-
-    <pre><code>// Iterate through all coffees and output them
-Query(Coffees) foreach { case (name, supID, price, sales, total) =>
-  println("  " + name + "\t" + supID + "\t" + price + "\t" + sales + "\t" + total)
-}</code></pre>
-
-    <p>This corresponds to <code>SELECT * FROM COFFEES</code> in SQL (except that the <code>*</code>
-        is the table's <code>*</code> projection we defined earlier and not whatever the
-        database sees as <code>*</code>). The type of the values we get in the loop is,
-        unsurprisingly, the type parameter of <code>Coffees</code>.</p>
-
-    <p>If you <a class="shortcut" href="#run">Run</a> the app again you should see the following output:</p>
-
-    <pre><code>Colombian 101 7.99 0 0
-French_Roast 49 8.99 0 0
-Espresso 150 9.99 0 0
-Colombian_Decaf 101 8.99 0 0
-French_Roast_Decaf 49 9.99 0 0</code></pre>
-
-    <p>Let's add a <em>projection</em> to this basic query. This is written in Scala with
-        the <code>map</code> method or a <em>for comprehension</em>:</p>
-
-    <pre><code>val q1 = for(c <- Coffees) // Coffees lifted automatically to a Query
-yield ConstColumn("  ") ++ c.name ++ "\t" ++ c.supID.asColumnOf[String] ++
-    "\t" ++ c.price.asColumnOf[String] ++ "\t" ++ c.sales.asColumnOf[String] ++
-    "\t" ++ c.total.asColumnOf[String]
-q1 foreach println</code></pre>
-
-    <p>The output will be the same: For each row of the table, all columns get
-        converted to strings and concatenated into one tab-separated string. The
-        difference is that all of this now happens inside the database engine, and
-        only the resulting concatenated string is shipped to the client. Note that we
-        avoid Scala's <code>+</code> operator (which is already heavily overloaded) in favor of
-        <code>++</code> (commonly used for sequence concatenation). Also, there is no automatic
-        conversion of other argument types to strings. This has to be done explicitly
-        with the type conversion method <code>asColumnOf</code>.</p>
-
+    <p>
+        The default query we've been using uses the <code>*</code> function on the <code>Table</code> mapping class.  For instance, the <code>suppliers</code> <code>TableQuery</code> uses the <code>*</code> function defined in <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> and returns all of the columns when executed because the <code>*</code> combines all of the columns.  Often we just want to select a subset of the columns.  To do this use the <code>map</code> function on a query, like:
+        <pre><code>suppliers.map(_.name)</code></pre>
+        This will create a new query that when executed just returns the <code>name</code> column.  The generated SQL will be something like:
+        <pre><code>select SUP_NAME from SUPPLIERS</code></pre>
+    </p>
 </div>
+
 <div>
-    <h2>Joining and Filtering</h2>
+    <h2>Sorting / Order By</h2>
 
-    <p>Joining and filtering tables is done the same way as when working with Scala collections:</p>
+    <p>
+        Sorting / adding <code>order by</code> statements is done using functions like <code>sortBy</code> on a <code>TableQuery</code> to create a new query.  For example in the <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> you can see an example sorting of coffees by price:
+        <pre><code>coffees.sortBy(_.price)</code></pre>
+        This would produce SQL equivalent to:
+        <pre><code>select * from COFFEES order by PRICE</code></pre>
+    </p>
+</div>
 
-    <p>Note the use of <code>===</code> instead of <code>==</code> for comparing two values for
-        equality. Similarly, the lifted embedding uses <code>=!=</code> instead of <code>!=</code> for
-        inequality. (The other comparison operators are the same as in Scala:
-        <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;=</code>, <code>&gt;</code>.)</p>
+<div>
+    <h2>Query Composition</h2>
 
-    <pre><code>// Perform a join to retrieve coffee names and supplier names for
-// all coffees costing less than $9.00
-val q2 = for {
-  c <- Coffees if c.price < 9.0
-  s <- Suppliers if s.id === c.supID
-} yield (c.name, s.name)
-for(t <- q2) println("  " + t._1 + " supplied by " + t._2)</code></pre>
+    <p>
+        The examples so far have taken a base query and used a function to produce a new, more specific query.  Due to the functional nature of the query API, this can be done repeatedly to produce more specific queries.  For example, to create a query on the <code>Coffees</code> table that sorts them by name, takes the first three rows, filters those with a prices greater than 9.0, and finally just returns the names, simply do:
+        <pre><code>coffees.sortBy(_.name).take(3).filter(_.price &gt; 9.0).map(_.name)</code></pre>
+        That results in a new query that has a fairly complex implementation in SQL.
+    </p>
+</div>
 
-    <p>The generator expression <code>Suppliers if s.id === c.supID</code> follows the
-        relationship established by the foreign key <code>Coffees.supplier</code>. Instead of
-        repeating the join condition here we can use the foreign key directly:</p>
+<div>
+    <h2>Joins</h2>
 
-    <pre><code>val q2 = for {
-  c <- Coffees if c.price < 9.0
-  s <- c.supplier
+    <p>
+        The <code>Coffees</code> table mapping in the <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> file includes a foreign key mapping to the <code>Suppliers</code> table:
+        <pre><code>foreignKey("SUP_FK", supID, TableQuery[Suppliers])(_.id)</code></pre>
+        To use this foreign key in a joined query it is easiest to use a <code>for</code> comprehension, like:
+        <pre><code>for {
+  c &lt;- coffees if c.price &gt; 9.0
+  s &lt;- c.supplier
 } yield (c.name, s.name)</code></pre>
-
-    <p>Instead of iterating over the results we could also read it into a <code>List</code> and then
-        iterate over that:</p>
-
-    <pre><code>val l2: List[(String, String)] = q2.list
-for((s1, s2) <- l2) println("  " + s1 + " supplied by " + s2)</code></pre>
-
+        This creates a new query that gets the <code>coffees</code> with a price greater than 9.0 and then joins them with their <code>suppliers</code> and returns their names.
+    </p>
 </div>
+
+<div>
+    <h2>Computed Values</h2>
+
+    <p>
+        Computed values like minimum, maximum, summation, and average can be done in the database using the query functions <code>min</code>, <code>max</code>, <code>sum</code> and <code>avg</code> like:
+        <pre><code>coffees.map(_.price).max</code></pre>
+        This creates a new <code>Column</code> where you can run the query by calling <code>run</code> to get back the value.  Check out the example in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>.
+    </p>
+</div>
+
+<div>
+    <h2>Manual SQL / String Interpolation</h2>
+
+    <p>
+        Sometimes writing manual sql is the easiest and best way to go but we don't want to lose SQL injection protection that Slick includes.  SQL String Interpolation provides a nice API for doing this.  Start by importing the interpolation API:
+        <pre><code>import scala.slick.jdbc.StaticQuery.interpolation</code></pre>
+        
+        Then use the <code>sql</code> String Interpolator:
+        <pre><code>val state = "CA"
+val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[String]</code></pre>
+    
+        This produces a query that can be run using the normal functions like <code>list</code>.
+    </p>
+</div>
+
+<div>
+    <h2>Case Class Mapping</h2>
+
+    <p>
+        The <a href="#code/src/main/scala/CaseClassMapping.scala" class="shortcut">CaseClassMapping.scala</a> file provides an example which uses a case class instead of tupled values.  Run this example by selecting <code>CaseClassMapping</code> in <a href="#run" class="shortcut">Run</a>.  To use case classes instead of tuples setup a <code>def *</code> projection which transforms the tuple values to and from the case class.  For example:
+        <pre><code>def * = (id.?, name) <> (User.tupled, User.unapply)</code></pre>
+        This uses the <code>User</code>'s <code>tupled</code> function to convert a <code>(Option[Int], String)</code> to a <code>User</code> and the <code>unapply</code> function to do the opposite.  Now all of the queries can work with a <code>User</code> instead of the tuples.
+    </p>
+</div>
+
+<div>
+    <h2>Auto-Generated Primary Keys</h2>
+
+    <p>
+        The <code>Users</code> table mapping in <a href="#code/src/main/scala/CaseClassMapping.scala" class="shortcut">CaseClassMapping.scala</a> defines an id column which uses an auto-incrementing primary key:
+        <pre><code>def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)</code></pre>
+        
+    </p>
+</div>
+
 <div>
     <h2>Next Steps</h2>
 
-    <p>For more information, check out the Slick manual on the
-        <a href="http://slick.typesafe.com/docs/">Slick documentation</a> page and
-        the <a href="https://github.com/slick/slick-examples">Slick Examples</a> project which
-        contains the full version of the app from this tutorial (<code>FirstExample</code>)
-        and several other sample apps.</p>
+    Check out the full Slick docs on <a href="http://slick.typesafe.com/doc/2.0.0-M3/lifted-embedding.html" target="_blank">Lifted Embedding</a> - the API all of these examples use.
 </div>
 
 </body>
