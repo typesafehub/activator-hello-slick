@@ -10,9 +10,11 @@ object HelloSlick extends App {
   val coffees: TableQuery[Coffees] = TableQuery[Coffees]
   
   // Create a connection (called a "session") to an in-memory H2 database
-  Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver").withSession { implicit session =>
+  val db = Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver")
+  db.withSession { implicit session =>
 
-    // Create the schema by combining the DDLs for the Suppliers and Coffees tables using the query interfaces
+    // Create the schema by combining the DDLs for the Suppliers and Coffees
+    // tables using the query interfaces
     (suppliers.ddl ++ coffees.ddl).create
 
   
@@ -20,7 +22,7 @@ object HelloSlick extends App {
   
     // Insert some suppliers
     suppliers += (101, "Acme, Inc.", "99 Market Street", "Groundsville", "CA", "95199")
-    suppliers += (49, "Superior Coffee", "1 Party Place", "Mendocino", "CA", "95460")
+    suppliers += ( 49, "Superior Coffee", "1 Party Place", "Mendocino", "CA", "95460")
     suppliers += (150, "The High Ground", "100 Coffee Lane", "Meadows", "CA", "93966")
 
     // Insert some coffees (using JDBC's batch insert feature)
@@ -32,10 +34,13 @@ object HelloSlick extends App {
       ("French_Roast_Decaf", 49, 9.99, 0, 0)
     )
   
-    val allSuppliers: List[(Int, String, String, String, String, String)] = suppliers.list
+    val allSuppliers: List[(Int, String, String, String, String, String)] =
+      suppliers.list
 
     // Print the number of rows inserted
-    coffeesInsertResult foreach (numRows => println(s"Inserted $numRows rows into the Coffees table"))
+    coffeesInsertResult foreach { numRows =>
+      println(s"Inserted $numRows rows into the Coffees table")
+    }
 
   
     /* Read / Query / Select */
@@ -52,7 +57,8 @@ object HelloSlick extends App {
     /* Filtering / Where */
 
     // Construct a query where the price of Coffees is > 9.0
-    val filterQuery: Query[Coffees, (String, Int, Double, Int, Int)] = coffees.filter(_.price > 9.0)
+    val filterQuery: Query[Coffees, (String, Int, Double, Int, Int)] =
+      coffees.filter(_.price > 9.0)
 
     println("Generated SQL for filter query:\n" + filterQuery.selectStatement)
 
@@ -77,7 +83,8 @@ object HelloSlick extends App {
     /* Delete */
 
     // Construct a delete query that deletes coffees with a price less than 8.0
-    val deleteQuery: Query[Coffees,(String, Int, Double, Int, Int)] = coffees.filter(_.price < 8.0)
+    val deleteQuery: Query[Coffees,(String, Int, Double, Int, Int)] =
+      coffees.filter(_.price < 8.0)
 
     // Print the SQL for the Coffees delete query
     println("Generated SQL for Coffees delete:\n" + deleteQuery.deleteStatement)
@@ -93,7 +100,8 @@ object HelloSlick extends App {
     // Construct a new coffees query that just selects the name
     val justNameQuery: Query[Column[String], String] = coffees.map(_.name)
   
-    println("Generated SQL for query returning just the name:\n" + justNameQuery.selectStatement)
+    println("Generated SQL for query returning just the name:\n" +
+      justNameQuery.selectStatement)
   
     // Execute the query
     println(justNameQuery.list)
@@ -101,9 +109,11 @@ object HelloSlick extends App {
   
     /* Sorting / Order By */
   
-    val sortByPriceQuery: Query[Coffees, (String, Int, Double, Int, Int)] = coffees.sortBy(_.price)
+    val sortByPriceQuery: Query[Coffees, (String, Int, Double, Int, Int)] =
+      coffees.sortBy(_.price)
   
-    println("Generated SQL for query sorted by price:\n" + sortByPriceQuery.selectStatement)
+    println("Generated SQL for query sorted by price:\n" +
+      sortByPriceQuery.selectStatement)
   
     // Execute the query
     println(sortByPriceQuery.list)
@@ -111,9 +121,11 @@ object HelloSlick extends App {
   
     /* Query Composition */
   
-    val composedQuery: Query[Column[String], String] = coffees.sortBy(_.name).take(3).filter(_.price > 9.0).map(_.name)
+    val composedQuery: Query[Column[String], String] =
+      coffees.sortBy(_.name).take(3).filter(_.price > 9.0).map(_.name)
   
-    println("Generated SQL for composed query:\n" + composedQuery.selectStatement)
+    println("Generated SQL for composed query:\n" +
+      composedQuery.selectStatement)
   
     // Execute the composed query
     println(composedQuery.list)

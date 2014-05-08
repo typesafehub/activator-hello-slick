@@ -54,7 +54,8 @@
 
     <p>
         Every query that runs against the database needs a database session to run with.  The <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> file sets up a database connection and gets a session:
-        <pre><code>Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver").withSession { session =&gt;</code></pre>
+        <pre><code>val db = Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver")
+db.withSession { implicit session =&gt; ... }</code></pre>
         Note: the <code>session</code> can be implicit to avoid specifying it explicitly with every query.<br/>
         
         The <code>session</code> can now be used in the scope of the provided function to make queries to the database.  The session is automatically closed after the function completes.
