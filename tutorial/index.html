@@ -54,7 +54,8 @@
 
     <p>
         Every query that runs against the database needs a database session to run with.  The <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> file sets up a database connection and gets a session:
-        <pre><code>Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver").withSession { session =&gt;</code></pre>
+        <pre><code>val db = Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver")
+db.withSession { implicit session =&gt; ... }</code></pre>
         Note: the <code>session</code> can be implicit to avoid specifying it explicitly with every query.<br/>
         
         The <code>session</code> can now be used in the scope of the provided function to make queries to the database.  The session is automatically closed after the function completes.
@@ -69,11 +70,12 @@
     <h2>Creating the Schema</h2>
 
     <p>
-        Once a session is available you can use it to perform operations on the database.  To create corresponding tables from a mapping you can get the DDL via it's <code>TableQuery</code> and then call the <code>create</code> method, like:
+        Once a session is available you can use it to perform operations on the database.  To create corresponding tables from a mapping you can get the DDL via its <code>TableQuery</code> and then call the <code>create</code> method, like:
         <pre><code>suppliers.ddl.create</code></pre>
     
         Multiple DDLs can also be combined together and created, like in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>:
         <pre><code>(suppliers.ddl ++ coffees.ddl).create</code></pre>
+        This will create all database entities and links (like foreign key references) in the correct order, even in the presence of cyclic dependencies between tables.
     </p>
 </div>
 
@@ -170,10 +172,10 @@
 </div>
 
 <div>
-    <h2>Manual SQL / String Interpolation</h2>
+    <h2>Plain SQL / String Interpolation</h2>
 
     <p>
-        Sometimes writing manual sql is the easiest and best way to go but we don't want to lose SQL injection protection that Slick includes.  SQL String Interpolation provides a nice API for doing this.  Start by importing the interpolation API:
+        Sometimes writing manual SQL is the easiest and best way to go but we don't want to lose SQL injection protection that Slick includes.  SQL String Interpolation provides a nice API for doing this.  Start by importing the interpolation API:
         <pre><code>import scala.slick.jdbc.StaticQuery.interpolation</code></pre>
         
         Then use the <code>sql</code> String Interpolator:
@@ -182,6 +184,8 @@ val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[Str
     
         This produces a query that can be run using the normal functions like <code>list</code>.
     </p>
+
+    <p>You can learn more about Slick's <em>Plain SQL</em> queries in the <a href="https://typesafe.com/activator/template/slick-plainsql" target="_blank">Slick Plain SQL Queries</a> template for Activator.</p>
 </div>
 
 <div>
@@ -199,15 +203,31 @@ val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[Str
 
     <p>
         The <code>Users</code> table mapping in <a href="#code/src/main/scala/CaseClassMapping.scala" class="shortcut">CaseClassMapping.scala</a> defines an id column which uses an auto-incrementing primary key:
-        <pre><code>def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)</code></pre>
-        
+    <pre><code>def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)</code></pre>
+
     </p>
+</div>
+
+<div>
+    <h2>Running Queries</h2>
+
+    <p>So far you have seen the <code>Invoker</code> methods <code>.list</code> and <code>.foreach</code> being used to run a collection-valued query. There are several other useful methods which are shown in <a href="#code/src/main/scala/InvokerMethods.scala" class="shortcut">InvokerMethods.scala</a>. They are equally applicable to <em>Lifted Embedding</em> and <em>Plain SQL</em> queries.</p>
+
+    <p>Note the use of <code>Compiled</code> in this app. It is used to define a pre-compiled query that can be executed with different parameters without having to recompile the SQL statement each time. This is the prefered way of defining queries in real-world applications. It prevents the (possibly expensive) compilation each time and leads to the same SQL statement (or a small, fixed set of SQL statements) so that the database system can also reuse a previously computed execution plan. As a side-effect, all parameters are automatically turned into bind variables:
+
+    <pre><code>val upTo = Compiled { k: Column[Int] =>
+  ts.filter(_.k <= k).sortBy(_.k)
+}</code></pre>
+    </p>
+
 </div>
 
 <div>
     <h2>Next Steps</h2>
 
-    Check out the full <a href="http://slick.typesafe.com/doc/2.0.0/" target="_blank">Slick docs</a>.
+    <p>Check out the full <a href="http://slick.typesafe.com/doc/2.0.1/" target="_blank">Slick manual and API docs</a>.</p>
+
+    <p>You can also find more Slick templates, contributed by both, the Slick team and the community, <a href="/home" class="shortcut">here in Activator</a>.</p>
 </div>
 
 </body>

@@ -5,7 +5,8 @@ object CaseClassMapping extends App {
   // the base query for the Users table
   val users = TableQuery[Users]
 
-  Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver").withSession { implicit session =>
+  val db = Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver")
+  db.withSession { implicit session =>
     
     // create the schema
     users.ddl.create
@@ -27,6 +28,7 @@ class Users(tag: Tag) extends Table[User](tag, "USERS") {
   def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)
   // The name can't be null
   def name = column[String]("NAME", O.NotNull)
-  // the * projection (e.g. select * ...) auto-transform the tupled column values to / from a User
+  // the * projection (e.g. select * ...) auto-transforms the tupled
+  // column values to / from a User
   def * = (name, id.?) <> (User.tupled, User.unapply)
 }
