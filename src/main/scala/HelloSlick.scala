@@ -57,7 +57,7 @@ object HelloSlick extends App {
     /* Filtering / Where */
 
     // Construct a query where the price of Coffees is > 9.0
-    val filterQuery: Query[Coffees, (String, Int, Double, Int, Int)] =
+    val filterQuery: Query[Coffees, (String, Int, Double, Int, Int), Seq] =
       coffees.filter(_.price > 9.0)
 
     println("Generated SQL for filter query:\n" + filterQuery.selectStatement)
@@ -69,7 +69,7 @@ object HelloSlick extends App {
     /* Update */
   
     // Construct an update query with the sales column being the one to update
-    val updateQuery: Query[Column[Int], Int] = coffees.map(_.sales)
+    val updateQuery: Query[Column[Int], Int, Seq] = coffees.map(_.sales)
 
     // Print the SQL for the Coffees update query
     println("Generated SQL for Coffees update:\n" + updateQuery.updateStatement)
@@ -83,7 +83,7 @@ object HelloSlick extends App {
     /* Delete */
 
     // Construct a delete query that deletes coffees with a price less than 8.0
-    val deleteQuery: Query[Coffees,(String, Int, Double, Int, Int)] =
+    val deleteQuery: Query[Coffees,(String, Int, Double, Int, Int), Seq] =
       coffees.filter(_.price < 8.0)
 
     // Print the SQL for the Coffees delete query
@@ -98,7 +98,7 @@ object HelloSlick extends App {
     /* Selecting Specific Columns */
   
     // Construct a new coffees query that just selects the name
-    val justNameQuery: Query[Column[String], String] = coffees.map(_.name)
+    val justNameQuery: Query[Column[String], String, Seq] = coffees.map(_.name)
   
     println("Generated SQL for query returning just the name:\n" +
       justNameQuery.selectStatement)
@@ -109,7 +109,7 @@ object HelloSlick extends App {
   
     /* Sorting / Order By */
   
-    val sortByPriceQuery: Query[Coffees, (String, Int, Double, Int, Int)] =
+    val sortByPriceQuery: Query[Coffees, (String, Int, Double, Int, Int), Seq] =
       coffees.sortBy(_.price)
   
     println("Generated SQL for query sorted by price:\n" +
@@ -121,7 +121,7 @@ object HelloSlick extends App {
   
     /* Query Composition */
   
-    val composedQuery: Query[Column[String], String] =
+    val composedQuery: Query[Column[String], String, Seq] =
       coffees.sortBy(_.name).take(3).filter(_.price > 9.0).map(_.name)
   
     println("Generated SQL for composed query:\n" +
@@ -134,7 +134,7 @@ object HelloSlick extends App {
     /* Joins */
   
     // Join the tables using the relationship defined in the Coffees table
-    val joinQuery: Query[(Column[String], Column[String]), (String, String)] = for {
+    val joinQuery: Query[(Column[String], Column[String]), (String, String), Seq] = for {
       c <- coffees if c.price > 9.0
       s <- c.supplier
     } yield (c.name, s.name)

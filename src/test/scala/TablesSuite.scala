@@ -21,7 +21,7 @@ class TablesSuite extends FunSuite with BeforeAndAfter {
   test("Creating the Schema works") {
     createSchema()
     
-    val tables = MTable.getTables().list()
+    val tables = MTable.getTables.list
 
     assert(tables.size == 2)
     assert(tables.count(_.name.name.equalsIgnoreCase("suppliers")) == 1)
@@ -38,7 +38,7 @@ class TablesSuite extends FunSuite with BeforeAndAfter {
   test("Query Suppliers works") {
     createSchema()
     insertSupplier()
-    val results = suppliers.list()
+    val results = suppliers.list
     assert(results.size == 1)
     assert(results.head._1 == 101)
   }

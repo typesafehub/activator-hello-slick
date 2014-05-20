@@ -38,7 +38,7 @@ object InvokerMethods extends App {
 
     println("All keys in an unboxed Array[Int]")
     val allKeys = dict.map(_.key)
-    println("  " + allKeys.buildColl[Array]())
+    println("  " + allKeys.buildColl[Array])
 
     println("Stream k/v pairs up to 3 via an Iterator")
     val it = upTo(3).iterator
