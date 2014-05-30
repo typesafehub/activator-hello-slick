@@ -33,7 +33,7 @@
     <h2>Project Setup</h2>
 
     <p>
-        Slick is a library that is easy to include in any project.  This project uses the sbt build tool so the dependency for Slick is specified in the <a href="#code/build.sbt" class="shortcut">build.sbt</a> file.  To make things simple this project uses the H2 database in-memory.  <a href="http://slick.typesafe.com/doc/2.0.0-M3/connection.html" target="_blank">Learn more about connecting to other databases in the Slick docs</a>.
+        Slick is a library that is easy to include in any project.  This project uses the sbt build tool so the dependency for Slick is specified in the <a href="#code/build.sbt" class="shortcut">build.sbt</a> file.  To make things simple this project uses the H2 database in-memory.  <a href="http://slick.typesafe.com/doc/2.1.0-M2/connection.html" target="_blank">Learn more about connecting to other databases in the Slick docs</a>.
     </p>
 </div>
 
@@ -41,11 +41,11 @@
     <h2>Schema / Table Mapping</h2>
 
     <p>
-        The <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> file contains the mappings for a <code>Suppliers</code> and a <code>Coffees</code> table.  These <code>Table</code> create a mapping between a database table and a class.  The table's columns are also mapped to functions.  This mapping is called <a href="http://slick.typesafe.com/doc/2.0.0/introduction.html#lifted-embedding" target="_blank">Lifted Embedding</a> since the types of a column mappings are not the actual column value's type, but a wrapper type.  For a column that contains a <code>Double</code> value the type of mapping will be <code>Column[Double]</code>.  This enables type-safe queries to be built around meta-data and then executed against the database.
+        The <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> file contains the mappings for a <code>Suppliers</code> and a <code>Coffees</code> table.  These <code>Table</code> create a mapping between a database table and a class.  The table's columns are also mapped to functions.  This mapping is called <a href="http://slick.typesafe.com/doc/2.1.0-M2/introduction.html#lifted-embedding" target="_blank">Lifted Embedding</a> since the types of a column mappings are not the actual column value's type, but a wrapper type.  For a column that contains a <code>Double</code> value the type of mapping will be <code>Column[Double]</code>.  This enables type-safe queries to be built around meta-data and then executed against the database.
 
         Using a table mapping object requires creating a <code>TableQuery</code> instance for the <code>Table</code> classes.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> the <code>suppliers</code> is the <code>TableQuery</code> instance for the <a href="#code/src/main/scala/Tables.scala" class="shortcut">Suppliers</a> class.<br/>
         
-        <a href="http://slick.typesafe.com/doc/2.0.0/schemas.html" target="_blank">Learn more about mapping tables and columns in the Slick docs</a>.
+        <a href="http://slick.typesafe.com/doc/2.1.0-M2/schemas.html" target="_blank">Learn more about mapping tables and columns in the Slick docs</a>.
     </p>
 </div>
 
@@ -62,7 +62,7 @@ db.withSession { implicit session =&gt; ... }</code></pre>
     
         It is also possible to create a session and manually close it.  The <a href="#code/src/test/scala/TablesSuite.scala" class="shortcut">TablesSuite.scala</a> tests do this in the <code>before</code> and <code>after</code> functions.
 
-        <a href="http://slick.typesafe.com/doc/2.0.0/connection.html#session-handling" target="_blank">Learn more about session and connnection handling in the Slick docs</a>.
+        <a href="http://slick.typesafe.com/doc/2.1.0-M2/connection.html#session-handling" target="_blank">Learn more about session and connnection handling in the Slick docs</a>.
     </p>
 </div>
 
@@ -87,7 +87,7 @@ db.withSession { implicit session =&gt; ... }</code></pre>
     </p>
     
     <p>
-        Basic reads / queries can be done through the <code>TableQuery</code> instance using <a href="http://slick.typesafe.com/doc/2.0.0/api/#scala.slick.jdbc.UnitInvoker" target="_blank">Invoker</a> functions.  A simple example of invoking a query is to just call <code>list</code> on the <code>Query</code>, like:
+        Basic reads / queries can be done through the <code>TableQuery</code> instance using <a href="http://slick.typesafe.com/doc/2.1.0-M2/api/#scala.slick.jdbc.UnitInvoker" target="_blank">Invoker</a> functions.  A simple example of invoking a query is to just call <code>list</code> on the <code>Query</code>, like:
         <pre><code>suppliers.list</code></pre>
         That would produce a <code>List[(Int, String, String, String, String, String)]</code> that corresponds to the columns defined in the <code>Table</code> mapping.  Other methods like <code>foreach</code>, <code>first</code>, <code>foldLeft</code> also perform queries.  Filtering, sorting, and joining will be covered in the next few sections of the tutorial.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> you can see how a <code>foreach</code> is used to do a <code>select *</code> query and then print each row.
     </p>
@@ -225,7 +225,7 @@ val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[Str
 <div>
     <h2>Next Steps</h2>
 
-    <p>Check out the full <a href="http://slick.typesafe.com/doc/2.0.1/" target="_blank">Slick manual and API docs</a>.</p>
+    <p>Check out the full <a href="http://slick.typesafe.com/doc/2.1.0-M2/" target="_blank">Slick manual and API docs</a>.</p>
 
     <p>You can also find more Slick templates, contributed by both, the Slick team and the community, <a href="/home" class="shortcut">here in Activator</a>.</p>
 </div>
