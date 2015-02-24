@@ -1,27 +1,29 @@
 import org.scalatest._
-import scala.slick.driver.H2Driver.simple._
-import scala.slick.jdbc.meta._
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.time.{Seconds, Span}
+import slick.driver.H2Driver.api._
+import slick.jdbc.meta._
 
-
-class TablesSuite extends FunSuite with BeforeAndAfter {
+class TablesSuite extends FunSuite with BeforeAndAfter with ScalaFutures {
+  implicit override val patienceConfig = PatienceConfig(timeout = Span(5, Seconds))
 
   val suppliers = TableQuery[Suppliers]
   val coffees = TableQuery[Coffees]
   
-  implicit var session: Session = _
+  var db: Database = _
 
-  def createSchema() = (suppliers.ddl ++ coffees.ddl).create
+  def createSchema() =
+    db.run((suppliers.schema ++ coffees.schema).create).futureValue
   
-  def insertSupplier(): Int = suppliers += (101, "Acme, Inc.", "99 Market Street", "Groundsville", "CA", "95199")
+  def insertSupplier(): Int =
+    db.run(suppliers += (101, "Acme, Inc.", "99 Market Street", "Groundsville", "CA", "95199")).futureValue
   
-  before {
-    session = Database.forURL("jdbc:h2:mem:test1", driver = "org.h2.Driver").createSession()
-  }
+  before { db = Database.forConfig("h2mem1") }
   
   test("Creating the Schema works") {
     createSchema()
     
-    val tables = MTable.getTables.list
+    val tables = db.run(MTable.getTables).futureValue
 
     assert(tables.size == 2)
     assert(tables.count(_.name.name.equalsIgnoreCase("suppliers")) == 1)
@@ -38,13 +40,10 @@ class TablesSuite extends FunSuite with BeforeAndAfter {
   test("Query Suppliers works") {
     createSchema()
     insertSupplier()
-    val results = suppliers.list
+    val results = db.run(suppliers.result).futureValue
     assert(results.size == 1)
     assert(results.head._1 == 101)
   }
   
-  after {
-    session.close()
-  }
-
+  after { db.close }
 }

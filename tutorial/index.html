@@ -12,7 +12,7 @@
         <pre><code>coffees.filter(_.price &lt; 10.0).map(_.name)</code></pre>
         This will produce a query equivalent to the following SQL:
         <pre><code>select COF_NAME from COFFEES where PRICE &lt; 10.0</code></pre>
-        Developers benefit from the type-safety and composability of FRM as well as being able to reuse the typical Scala collection APIs like <code>filter</code>, <code>map</code>, <code>foreach</code>, etc.
+        Developers benefit from the type-safety and composability of FRM as well as being able to reuse the typical Scala collection APIs like <code>filter</code>, <code>map</code>, <code>groupBy</code>, etc.
         This template will get you started learning Slick using a working application.  Continue the tutorial to learn about how to run the application, run the tests, and explore the basics of Slick.
     </p>
 </div>
@@ -27,123 +27,183 @@
     <p>
         The <a href="#code/src/test/scala/TablesSuite.scala" class="shortcut">TablesSuite.scala</a> file contains ScalaTest tests which do some basic integration tests.  Check out the test results in <a href="#test" class="shortcut">Test</a>.
     </p>
-</div>
 
-<div>
-    <h2>Project Setup</h2>
+    <p>Slick is a library that is easy to include in any project.  This project uses the sbt build tool so the dependency for Slick is specified in the <a href="#code/build.sbt" class="shortcut">build.sbt</a> file.  To make things simple this project uses an embedded H2 in-memory database.</p>
 
-    <p>
-        Slick is a library that is easy to include in any project.  This project uses the sbt build tool so the dependency for Slick is specified in the <a href="#code/build.sbt" class="shortcut">build.sbt</a> file.  To make things simple this project uses the H2 database in-memory.  <a href="http://slick.typesafe.com/doc/2.1.0-M2/connection.html" target="_blank">Learn more about connecting to other databases in the Slick docs</a>.
-    </p>
+    <p><a href="http://slick.typesafe.com/doc/3.0.0-RC1/database.html#database-configuration" target="_blank">Learn more about connecting to databases in the Slick docs</a>.</p>
+
 </div>
 
 <div>
     <h2>Schema / Table Mapping</h2>
 
-    <p>
-        The <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> file contains the mappings for a <code>Suppliers</code> and a <code>Coffees</code> table.  These <code>Table</code> create a mapping between a database table and a class.  The table's columns are also mapped to functions.  This mapping is called <a href="http://slick.typesafe.com/doc/2.1.0-M2/introduction.html#lifted-embedding" target="_blank">Lifted Embedding</a> since the types of a column mappings are not the actual column value's type, but a wrapper type.  For a column that contains a <code>Double</code> value the type of mapping will be <code>Column[Double]</code>.  This enables type-safe queries to be built around meta-data and then executed against the database.
+    <p>The <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> file contains the mappings for a <code>Suppliers</code> and a <code>Coffees</code> table.  These <code>Table</code> create a mapping between a database table and a class.  The table's columns are also mapped to functions.  This mapping is called <a href="http://slick.typesafe.com/doc/2.1.0-M2/introduction.html#lifted-embedding" target="_blank">Lifted Embedding</a> since the types of a column mappings are not the actual column value's type, but a wrapper type.  For a column that contains a <code>Double</code> value the type of mapping will be <code>Rep[Double]</code>.  This enables type-safe queries to be built around meta-data and then executed against the database.</p>
 
-        Using a table mapping object requires creating a <code>TableQuery</code> instance for the <code>Table</code> classes.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> the <code>suppliers</code> is the <code>TableQuery</code> instance for the <a href="#code/src/main/scala/Tables.scala" class="shortcut">Suppliers</a> class.<br/>
+    <p>Using a table mapping object requires creating a <code>TableQuery</code> instance for the <code>Table</code> classes.  For example, in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> the <code>suppliers</code> val is the <code>TableQuery</code> instance for the <a href="#code/src/main/scala/Tables.scala" class="shortcut">Suppliers</a> class.</p>
         
-        <a href="http://slick.typesafe.com/doc/2.1.0-M2/schemas.html" target="_blank">Learn more about mapping tables and columns in the Slick docs</a>.
-    </p>
+    <p><a href="http://slick.typesafe.com/doc/3.0.0-RC1/schemas.html" target="_blank">Learn more about mapping tables and columns in the Slick docs</a>.</p>
+
 </div>
 
 <div>
     <h2>Database Connection</h2>
 
-    <p>
-        Every query that runs against the database needs a database session to run with.  The <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> file sets up a database connection and gets a session:
-        <pre><code>val db = Database.forURL("jdbc:h2:mem:hello", driver = "org.h2.Driver")
-db.withSession { implicit session =&gt; ... }</code></pre>
-        Note: the <code>session</code> can be implicit to avoid specifying it explicitly with every query.<br/>
-        
-        The <code>session</code> can now be used in the scope of the provided function to make queries to the database.  The session is automatically closed after the function completes.
-    
-        It is also possible to create a session and manually close it.  The <a href="#code/src/test/scala/TablesSuite.scala" class="shortcut">TablesSuite.scala</a> tests do this in the <code>before</code> and <code>after</code> functions.
+    <p>Database connections are usually configured via <a href="https://github.com/typesafehub/config" target="_blank">Typesafe Config</a> in your <a href="#code/src/main/resources/application.conf" class="shortcut">application.conf</a>, which is also used by <a href="https://playframework.com/" target="_blank">Play</a> and <a href="http://akka.io/" target="_blank">Akka</a> for their configuration:</p>
 
-        <a href="http://slick.typesafe.com/doc/2.1.0-M2/connection.html#session-handling" target="_blank">Learn more about session and connnection handling in the Slick docs</a>.
-    </p>
+    <pre><code>h2mem1 = {
+  url = "jdbc:h2:mem:test1"
+  driver = org.h2.Driver
+  connectionPool = disabled
+  keepAliveConnection = true
+}</code></pre>
+
+    <p>The default connection pool is <a href="http://brettwooldridge.github.io/HikariCP/" target="_blank">HikariCP</a>. Since a connection pool is not necessary for an embedded H2 database, we disable it here. When you use a real, external database server, the connection pool provides improved performance and resilience. The <code>keepAliveConnection</code> option (which is only available without a connection pool) keeps an extra connection open for the lifetime of the <code>Database</code> object in the application. It is useful for managing the lifecycle of named in-memory databases which keep their data as long as there are still open connections.</p>
+
+    <p>In the body of <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> we create a <code>Database</code> object from the configuration. This causes a thread pool (and usually also a connection pool) to be created in the background. You should always close the <code>Database</code> object at the end to release these resources. HelloSlick is a standalone command-line application, not running inside of a container which takes care of resource management, so we have to do it ourselves. Since all database calls in Slick are asynchronous, we are going to compose Futures throughout the app, but eventually we have to wait for the result. This gives us the following scaffolding:</p>
+
+    <pre><code>val db = Database.forConfig("h2mem1")
+try {
+  val f: Future[_] = {
+    // body of the application
+  }
+  Await.result(f, Duration.Inf)
+} finally db.close</code></pre>
+
+    <p>If you are not familiar with asynchronous, Future-based programming Scala, you can learn more about <a href="http://docs.scala-lang.org/overviews/core/futures.html" target="_blank">Futures and Promises</a> in the Scala documentation.</p>
 </div>
 
 <div>
-    <h2>Creating the Schema</h2>
+    <h2>Creating and Inserting</h2>
 
-    <p>
-        Once a session is available you can use it to perform operations on the database.  To create corresponding tables from a mapping you can get the DDL via its <code>TableQuery</code> and then call the <code>create</code> method, like:
-        <pre><code>suppliers.ddl.create</code></pre>
+    <p>To create corresponding tables from a mapping you can get the schema via its <code>TableQuery</code> and then call the <code>create</code> method, like:</p>
+
+    <pre><code>suppliers.schema.create</code></pre>
     
-        Multiple DDLs can also be combined together and created, like in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>:
-        <pre><code>(suppliers.ddl ++ coffees.ddl).create</code></pre>
-        This will create all database entities and links (like foreign key references) in the correct order, even in the presence of cyclic dependencies between tables.
-    </p>
+    <p>Multiple schemas can also be combined as in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>, to create all database entities and links (like foreign key references) in the correct order, even in the presence of cyclic dependencies between tables:</p>
+
+    <pre><code>(suppliers.schema ++ coffees.schema).create</code></pre>
+
+    <p>The result of <code>.create</code> is a <em>database I/O action</em> which encapsulates the DDL statements.</p>
+
+    <p>Creates / Inserts are as simple as appending the values to a <code>TableQuery</code> instance using either the <code>+=</code> operator for a single row, or <code>++=</code> for multiple rows.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> both of these ways of doing inserts are used.</p>
 </div>
 
 <div>
-    <h2>Basic CRUD</h2>
+    <h2>Running Database I/O Actions</h2>
 
-    <p>
-        Creates / Inserts are as simple as appending the values to a <code>TableQuery</code> instance using either the <code>+=</code> operator for a single row, or <code>++=</code> for multiple rows.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> both of these ways of doing inserts are used.
-    </p>
-    
-    <p>
-        Basic reads / queries can be done through the <code>TableQuery</code> instance using <a href="http://slick.typesafe.com/doc/2.1.0-M2/api/#scala.slick.jdbc.UnitInvoker" target="_blank">Invoker</a> functions.  A simple example of invoking a query is to just call <code>list</code> on the <code>Query</code>, like:
-        <pre><code>suppliers.list</code></pre>
-        That would produce a <code>List[(Int, String, String, String, String, String)]</code> that corresponds to the columns defined in the <code>Table</code> mapping.  Other methods like <code>foreach</code>, <code>first</code>, <code>foldLeft</code> also perform queries.  Filtering, sorting, and joining will be covered in the next few sections of the tutorial.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> you can see how a <code>foreach</code> is used to do a <code>select *</code> query and then print each row.
-    </p>
+    <p>Like all other database operations, <code>+=</code> and <code>++=</code> return database I/O actions. If you do not care about more advanced features like streaming, effect tracking or extension methods for certain actions, you can denote their type as <code>DBIO[T]</code> (for an operation which will eventually produce a value of type <code>T</code>). Instead of running all actions separately, you can combine them with other actions in various ways. The simplest combinator is <code>DBIO.seq</code> which takes a variable number of actions of any type and combines them into a single <code>DBIO[Unit]</code> that runs the actions in the specified order. We use it in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> to define <code>setupAction</code> which combines schema creation with some insert actions.</p>
 
-    <p>
-        Filtering / adding <code>where</code> statements to a query is done using functions like <code>filter</code> and <code>take</code> on a <code>TableQuery</code> to construct a new query.  For example, to create a new query on the <code>Coffees</code> table that selects only rows where the price is higher than 9.0, just do:
-        <pre><code>coffees.filter(_.price &gt; 9.0)</code></pre>
-        This produces a SQL statement equivalent to:
-        <pre><code>select * from COFFEES where PRICE &gt; 9.0</code></pre>
-    </p>
-    
-    <p>
-        Updates are done through the <code>TableQuery</code> instance by calling the <code>update</code> function.  To update the <code>sales</code> column on all rows of the <code>Suppliers</code> table, create a new query for just that column:
-        <pre><code>val updateQuery: Query[Column[Int], Int] = coffees.map(_.sales)</code></pre>
-        Then call the <code>update</code> with the new value:
-        <pre><code>updateQuery.update(1)</code></pre>
-    </p>
+    <p>So far we have only staged the operations. We can run them with <code>db.run</code>:</p>
 
-    <p>
-        Deletes are done by just running <code>delete</code> on a query.  So to delete coffees with a price less than 8.0, just do:
-        <pre><code>coffees.filter(_.price &lt; 8.0).delete</code></pre>
-        This will produce SQL equivalent to:
-        <pre><code>delete from COFFEES where PRICE &lt; 8.0</code></pre>
-    </p>
+    <pre><code>val setupFuture: Future[Unit] =
+  db.run(setupAction)</code></pre>
+
+    <p>This performs the database calls asynchronously, eventually completing the returned <code>Future</code>.</p>
+
+    <p>When inserting data, the database usually returns the number of affected rows, therefore the return type is <code>Option[Int]</code> as can be seen in the definition of <code>insertAction</code>:</p>
+
+    <pre><code>val insertAction: DBIO[Option[Int]] = ...</code></pre>
+
+    <p>We can use the <code>map</code> combinator to run some code and compute a new value from the value returned by the action (or in this case run it only for its side effects and return <code>Unit</code>):
+
+    <pre><code>val insertAndPrintAction: DBIO[Unit] = insertAction.map { coffeesInsertResult =>
+  // Print the number of rows inserted
+  coffeesInsertResult foreach { numRows =>
+    println(s"Inserted $numRows rows into the Coffees table")
+  }
+}</code></pre>
+
+    <p>Note that <code>map</code> and all other combinators which run user code (e.g. flatMap, cleanup, filter) take an implicit <code>ExecutionContext</code> on which to run this code. Slick uses its own ExecutionContext internally for running blocking database I/O but it always maintains a clean separation and prevents you from running non-I/O code on it.</p>
+
 </div>
 
 <div>
-    <h2>Selecting Specific Columns</h2>
+    <h2>Querying and Streaming</h2>
 
-    <p>
-        The default query we've been using uses the <code>*</code> function on the <code>Table</code> mapping class.  For instance, the <code>suppliers</code> <code>TableQuery</code> uses the <code>*</code> function defined in <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> and returns all of the columns when executed because the <code>*</code> combines all of the columns.  Often we just want to select a subset of the columns.  To do this use the <code>map</code> function on a query, like:
-        <pre><code>suppliers.map(_.name)</code></pre>
-        This will create a new query that when executed just returns the <code>name</code> column.  The generated SQL will be something like:
-        <pre><code>select SUP_NAME from SUPPLIERS</code></pre>
-    </p>
+    <p>Queries usually start with a <code>TableQuery</code> instance. In the simplest case you read the contents of an entire table by calling <code>.result</code> directly on the <code>TableQuery</code> to get a <code>DBIO</code> action, as shown in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>:</p>
+
+    <pre><code>val allSuppliersAction: DBIO[Seq[(Int, String, String, String, String, String)]] =
+  suppliers.result</code></pre>
+
+    <p>This produces a <code>Seq[(Int, String, String, String, String, String)]</code> that corresponds to the columns defined in the <code>Table</code> mapping.  Filtering, sorting, and joining will be covered in the next few sections of the tutorial.  We use another new combinator to combine the previously defined <code>insertAndPrintAction</code> with the new <code>allSuppliersAction</code>:</p>
+
+    <pre><code>val combinedAction: DBIO[Seq[(Int, String, String, String, String, String)]] =
+  insertAndPrintAction >> allSuppliersAction
+
+val combinedFuture: Future[Seq[(Int, String, String, String, String, String)]] =
+  db.run(combinedAction)</code></pre>
+
+    <p>The <code>&gt;&gt;</code> combinator (also available under the name <code>andThen</code>) runs the second action after the first, similar to <code>DBIO.seq</code> but it does not discard the return value of the second action.</p>
+
+    <p>The default query we've been using uses the <code>*</code> method on the <code>Table</code> mapping class.  For instance, the <code>suppliers</code> <code>TableQuery</code> uses the <code>*</code> method defined in <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> and returns all of the columns when executed because the <code>*</code> combines all of the columns.  Often we just want to select a subset of the columns.  To do this use the <code>map</code> method on a query, like:</p>
+
+    <pre><code>val coffeeNamesAction: StreamingDBIO[Seq[String], String] =
+  coffees.map(_.name).result</code></pre>
+
+    <p>This will create a new query that when executed just returns the <code>name</code> column.  The generated SQL will be something like:</p>
+
+    <pre><code>select SUP_NAME from SUPPLIERS</code></pre>
+
+    <p>The type annotation above uses the type <code>StreamingDBIO[Seq[String], String]</code> instead of <code>DBIO[Seq[String]]</code> to also allow streaming. The first type parameter denotes the fully materialized result (as in <code>DBIO</code>) whereas the second type parameter is only the element type. Note that these types can always be inferred by the compiler. They are only spelled out explicitly in this tutorial to facilitate understanding. If you have a streaming action, you can use <code>db.stream</code> instead of <code>db.run</code> to get a <a href="http://reactive-streams.org/" target="_blank">Reactive Streams</a> <code>Publisher</code> instead of a <code>Future</code>. This allows data to be streamed asynchronously from the database with any compatible library like <em>Akka Streams</em>. Slick itself does not provide a full set of tools for working with streams but it has a <code>.foreach</code> utility method for consuming a stream:</p>
+
+    <pre><code>val coffeeNamesPublisher: DatabasePublisher[String] =
+  db.stream(coffeeNamesAction)
+
+coffeeNamesPublisher.foreach(println)</code></pre>
+
+    <p>Note that a database I/O action does <em>not</em> yet start running when you call <code>db.stream</code>. You must attach a <code>Subscriber</code> to the stream (i.e. start consuming the stream) to actually run the action.</p>
+
 </div>
 
 <div>
-    <h2>Sorting / Order By</h2>
+    <h2>More CRUD Operations</h2>
 
-    <p>
-        Sorting / adding <code>order by</code> statements is done using functions like <code>sortBy</code> on a <code>TableQuery</code> to create a new query.  For example in the <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> you can see an example sorting of coffees by price:
-        <pre><code>coffees.sortBy(_.price)</code></pre>
-        This would produce SQL equivalent to:
-        <pre><code>select * from COFFEES order by PRICE</code></pre>
-    </p>
+    <p>Filtering / adding <code>where</code> statements to a query is done using methods like <code>filter</code> and <code>take</code> on a <code>Query</code> to construct a new query.  For example, to create a new query on the <code>Coffees</code> table that selects only rows where the price is higher than 9.0, we use the folling code in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>:<p>
+
+    <pre><code>coffees.filter(_.price &gt; 9.0)</code></pre>
+
+    <p>This produces a SQL statement equivalent to:</p>
+
+    <pre><code>select * from COFFEES where PRICE &gt; 9.0</code></pre>
+
+    <p>Updates are done through a <code>Query</code> object by calling the <code>update</code> method.  To update the <code>sales</code> column on all rows of the <code>Suppliers</code> table, create a new query for just that column:</p>
+
+    <pre><code>val updateQuery: Query[Column[Int], Int] =
+  coffees.map(_.sales)</code></pre>
+
+    <p>Then call the <code>update</code> with the new value to produce an action that will perform the update. Updates, like inserts, return the number of affected rows:</p>
+
+    <pre><code>val updateAction: DBIO[Int] =
+  updateQuery.update(1)</code></pre>
+
+    <p>Deletes are done by just calling <code>delete</code> on a query to get an action.  So to delete coffees with a price less than 8.0, you do:</p>
+
+    <pre><code>val deleteQuery: Query[Coffees,(String, Int, Double, Int, Int), Seq] =
+  coffees.filter(_.price < 8.0)
+
+val deleteAction = deleteQuery.delete</code></pre>
+
+    <p>This will produce SQL equivalent to:</p>
+
+    <pre><code>delete from COFFEES where PRICE &lt; 8.0</code></pre>
 </div>
 
 <div>
     <h2>Query Composition</h2>
 
-    <p>
-        The examples so far have taken a base query and used a function to produce a new, more specific query.  Due to the functional nature of the query API, this can be done repeatedly to produce more specific queries.  For example, to create a query on the <code>Coffees</code> table that sorts them by name, takes the first three rows, filters those with a prices greater than 9.0, and finally just returns the names, simply do:
-        <pre><code>coffees.sortBy(_.name).take(3).filter(_.price &gt; 9.0).map(_.name)</code></pre>
-        That results in a new query that has a fairly complex implementation in SQL.
-    </p>
+    <p>Sorting / adding <code>order by</code> clauses is done using methods like <code>sortBy</code> on a <code>Query</code> to create a new query.  For example in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> you can see an example sorting of coffees by price:</p>
+
+    <pre><code>coffees.sortBy(_.price)</code></pre>
+
+    <p>This would produce SQL equivalent to:</p>
+
+    <pre><code>select * from COFFEES order by PRICE</code></pre>
+
+    <p>The examples so far have taken a basic <code>TableQuery</code> and used a method to produce a new, more specific query.  Due to the functional nature of the query API, this can be done repeatedly to produce more specific queries.  For example, to create a query on the <code>Coffees</code> table that sorts them by name, takes the first three rows, filters those with a prices greater than 9.0, and finally just returns the names, simply do:</p>
+
+    <pre><code>coffees.sortBy(_.name).take(3).filter(_.price &gt; 9.0).map(_.name)</code></pre>
+
+    <p>This results in a new query that has a fairly complex implementation in SQL.</p>
 </div>
 
 <div>
@@ -174,18 +234,14 @@ db.withSession { implicit session =&gt; ... }</code></pre>
 <div>
     <h2>Plain SQL / String Interpolation</h2>
 
-    <p>
-        Sometimes writing manual SQL is the easiest and best way to go but we don't want to lose SQL injection protection that Slick includes.  SQL String Interpolation provides a nice API for doing this.  Start by importing the interpolation API:
-        <pre><code>import scala.slick.jdbc.StaticQuery.interpolation</code></pre>
-        
-        Then use the <code>sql</code> String Interpolator:
-        <pre><code>val state = "CA"
+    <p>Sometimes writing manual SQL is the easiest and best way to go but we don't want to lose SQL injection protection that Slick includes.  SQL String Interpolation provides a nice API for doing this.  In <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> we use the <code>sql</code> interpolator:</p>
+
+    <pre><code>val state = "CA"
 val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[String]</code></pre>
     
-        This produces a query that can be run using the normal functions like <code>list</code>.
-    </p>
+    <p>This produces a database I/O action that can be run or streamed in the usual way.</p>
 
-    <p>You can learn more about Slick's <em>Plain SQL</em> queries in the <a href="https://typesafe.com/activator/template/slick-plainsql" target="_blank">Slick Plain SQL Queries</a> template for Activator.</p>
+    <p>You can learn more about Slick's <em>Plain SQL</em> queries in the <a href="https://typesafe.com/activator/template/slick-plainsql-3.0" target="_blank">Slick Plain SQL Queries (Slick 3.0)</a> template for Activator.</p>
 </div>
 
 <div>
@@ -211,7 +267,7 @@ val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[Str
 <div>
     <h2>Running Queries</h2>
 
-    <p>So far you have seen the <code>Invoker</code> methods <code>.list</code> and <code>.foreach</code> being used to run a collection-valued query. There are several other useful methods which are shown in <a href="#code/src/main/scala/InvokerMethods.scala" class="shortcut">InvokerMethods.scala</a>. They are equally applicable to <em>Lifted Embedding</em> and <em>Plain SQL</em> queries.</p>
+    <p>So far you have seen how to get a <code>Seq</code> from a collection-valued query and how to stream individual elements. There are several other useful methods which are shown in <a href="#code/src/main/scala/QueryActions.scala" class="shortcut">QueryActions.scala</a>. They are equally applicable to <em>Lifted Embedding</em> and <em>Plain SQL</em> queries.</p>
 
     <p>Note the use of <code>Compiled</code> in this app. It is used to define a pre-compiled query that can be executed with different parameters without having to recompile the SQL statement each time. This is the prefered way of defining queries in real-world applications. It prevents the (possibly expensive) compilation each time and leads to the same SQL statement (or a small, fixed set of SQL statements) so that the database system can also reuse a previously computed execution plan. As a side-effect, all parameters are automatically turned into bind variables:
 
@@ -225,7 +281,7 @@ val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[Str
 <div>
     <h2>Next Steps</h2>
 
-    <p>Check out the full <a href="http://slick.typesafe.com/doc/2.1.0-M2/" target="_blank">Slick manual and API docs</a>.</p>
+    <p>Check out the full <a href="http://slick.typesafe.com/doc/3.0.0-RC1/" target="_blank">Slick manual and API docs</a>.</p>
 
     <p>You can also find more Slick templates, contributed by both, the Slick team and the community, <a href="/home" class="shortcut">here in Activator</a>.</p>
 </div>
