@@ -7,3 +7,4 @@ target
 /RUNNING_PID
 *.iml
 .DS_Store
+.sbtserver*
