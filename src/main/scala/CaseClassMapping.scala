@@ -2,6 +2,7 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
 import slick.driver.H2Driver.api._
+import slick.profile.SqlProfile.ColumnOption.NotNull
 
 object CaseClassMapping extends App {
 
@@ -30,7 +31,7 @@ class Users(tag: Tag) extends Table[User](tag, "USERS") {
   // Auto Increment the id primary key column
   def id = column[Int]("ID", O.PrimaryKey, O.AutoInc)
   // The name can't be null
-  def name = column[String]("NAME", O.NotNull)
+  def name = column[String]("NAME", NotNull)
   // the * projection (e.g. select * ...) auto-transforms the tupled
   // column values to / from a User
   def * = (name, id.?) <> (User.tupled, User.unapply)
