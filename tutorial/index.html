@@ -271,7 +271,7 @@ val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[Str
 
     <p>Note the use of <code>Compiled</code> in this app. It is used to define a pre-compiled query that can be executed with different parameters without having to recompile the SQL statement each time. This is the prefered way of defining queries in real-world applications. It prevents the (possibly expensive) compilation each time and leads to the same SQL statement (or a small, fixed set of SQL statements) so that the database system can also reuse a previously computed execution plan. As a side-effect, all parameters are automatically turned into bind variables:
 
-    <pre><code>val upTo = Compiled { k: Column[Int] =>
+    <pre><code>val upTo = Compiled { k: Rep[Int] =>
   ts.filter(_.k <= k).sortBy(_.k)
 }</code></pre>
     </p>

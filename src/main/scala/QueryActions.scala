@@ -20,7 +20,7 @@ object QueryActions extends App {
 
     // Define a pre-compiled parameterized query for reading all key/value
     // pairs up to a given key.
-    val upTo = Compiled { k: Column[Int] =>
+    val upTo = Compiled { k: Rep[Int] =>
       dict.filter(_.key <= k).sortBy(_.key)
     }
 
@@ -30,7 +30,7 @@ object QueryActions extends App {
     Await.result(db.run(DBIO.seq(
 
       // Create the dictionary table and insert some data
-      dict.ddl.create,
+      dict.schema.create,
       dict ++= Seq(1 -> "a", 2 -> "b", 3 -> "c", 4 -> "d", 5 -> "e"),
 
       upTo(3).result.map { r =>
