@@ -6,7 +6,7 @@
 
 <div>
     <h2>Intro to Slick</h2>
-    
+
     <p>
         Slick is a Functional Relational Mapping (FRM) library for Scala where you work with relational data in a type-safe and functional way.  Here is an example:
         <pre><code>coffees.filter(_.price &lt; 10.0).map(_.name)</code></pre>
@@ -19,7 +19,7 @@
 
 <div>
     <h2>Run the App and the Tests</h2>
-    
+
     <p>
         This template includes a simple Scala application, <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>, that does basic FRM operations with Slick.  This application automatically runs when Activator is started and then re-runs after every successful compile.  You can see the output in <a href="#run" class="shortcut">Run</a>.  Note: The example code in this app has intentionally verbose type information.  In normal applications type inference is used more extensively but to assist with learning the type information was included.
     </p>
@@ -30,7 +30,7 @@
 
     <p>Slick is a library that is easy to include in any project.  This project uses the sbt build tool so the dependency for Slick is specified in the <a href="#code/build.sbt" class="shortcut">build.sbt</a> file.  To make things simple this project uses an embedded H2 in-memory database.</p>
 
-    <p><a href="http://slick.typesafe.com/doc/3.0.0-RC1/database.html#database-configuration" target="_blank">Learn more about connecting to databases in the Slick docs</a>.</p>
+    <p><a href="http://slick.typesafe.com/doc/3.1.1/database.html#database-configuration" target="_blank">Learn more about connecting to databases in the Slick docs</a>.</p>
 
 </div>
 
@@ -40,8 +40,8 @@
     <p>The <a href="#code/src/main/scala/Tables.scala" class="shortcut">Tables.scala</a> file contains the mappings for a <code>Suppliers</code> and a <code>Coffees</code> table.  These <code>Table</code> create a mapping between a database table and a class.  The table's columns are also mapped to functions.  This mapping is called <a href="http://slick.typesafe.com/doc/2.1.0-M2/introduction.html#lifted-embedding" target="_blank">Lifted Embedding</a> since the types of a column mappings are not the actual column value's type, but a wrapper type.  For a column that contains a <code>Double</code> value the type of mapping will be <code>Rep[Double]</code>.  This enables type-safe queries to be built around meta-data and then executed against the database.</p>
 
     <p>Using a table mapping object requires creating a <code>TableQuery</code> instance for the <code>Table</code> classes.  For example, in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a> the <code>suppliers</code> val is the <code>TableQuery</code> instance for the <a href="#code/src/main/scala/Tables.scala" class="shortcut">Suppliers</a> class.</p>
-        
-    <p><a href="http://slick.typesafe.com/doc/3.0.0-RC1/schemas.html" target="_blank">Learn more about mapping tables and columns in the Slick docs</a>.</p>
+
+    <p><a href="http://slick.typesafe.com/doc/3.1.1/schemas.html" target="_blank">Learn more about mapping tables and columns in the Slick docs</a>.</p>
 
 </div>
 
@@ -78,7 +78,7 @@ try {
     <p>To create corresponding tables from a mapping you can get the schema via its <code>TableQuery</code> and then call the <code>create</code> method, like:</p>
 
     <pre><code>suppliers.schema.create</code></pre>
-    
+
     <p>Multiple schemas can also be combined as in <a href="#code/src/main/scala/HelloSlick.scala" class="shortcut">HelloSlick.scala</a>, to create all database entities and links (like foreign key references) in the correct order, even in the presence of cyclic dependencies between tables:</p>
 
     <pre><code>(suppliers.schema ++ coffees.schema).create</code></pre>
@@ -238,7 +238,7 @@ val deleteAction = deleteQuery.delete</code></pre>
 
     <pre><code>val state = "CA"
 val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[String]</code></pre>
-    
+
     <p>This produces a database I/O action that can be run or streamed in the usual way.</p>
 
     <p>You can learn more about Slick's <em>Plain SQL</em> queries in the <a href="https://typesafe.com/activator/template/slick-plainsql-3.0" target="_blank">Slick Plain SQL Queries (Slick 3.0)</a> template for Activator.</p>
@@ -281,7 +281,7 @@ val plainQuery = sql"select SUP_NAME from SUPPLIERS where STATE = $state".as[Str
 <div>
     <h2>Next Steps</h2>
 
-    <p>Check out the full <a href="http://slick.typesafe.com/doc/3.0.0-RC1/" target="_blank">Slick manual and API docs</a>.</p>
+    <p>Check out the full <a href="http://slick.typesafe.com/doc/3.1.1/" target="_blank">Slick manual and API docs</a>.</p>
 
     <p>You can also find more Slick templates, contributed by both, the Slick team and the community, <a href="/home" class="shortcut">here in Activator</a>.</p>
 </div>
