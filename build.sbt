@@ -1,5 +1,7 @@
 name := "hello-slick"
 
+scalaVersion := "2.11.8"
+
 mainClass in Compile := Some("HelloSlick")
 
 libraryDependencies ++= List(
