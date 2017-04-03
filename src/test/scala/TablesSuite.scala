@@ -1,7 +1,7 @@
 import org.scalatest._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.time.{Seconds, Span}
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 import slick.jdbc.meta._
 
 class TablesSuite extends FunSuite with BeforeAndAfter with ScalaFutures {

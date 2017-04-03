@@ -1,7 +1,7 @@
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import slick.driver.H2Driver.api._
+import slick.jdbc.H2Profile.api._
 
 object CaseClassMapping extends App {
 

@@ -1,8 +1,8 @@
 import scala.concurrent.{Future, Await}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.Duration
-import slick.backend.DatabasePublisher
-import slick.driver.H2Driver.api._
+import slick.basic.DatabasePublisher
+import slick.jdbc.H2Profile.api._
 
 // The main application
 object HelloSlick extends App {
